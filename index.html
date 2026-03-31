@@ -120,9 +120,90 @@
       .chart-grid-2 { grid-template-columns: 1fr; }
       .chart-grid-3 { grid-template-columns: 1fr; }
     }
+
+    /* 비밀번호 모달 */
+    .password-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(4px);
+    }
+    .password-modal.hidden { display: none; }
+    .password-box {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+    .password-box h2 {
+      font-size: 24px;
+      margin-bottom: 12px;
+      color: #1a202c;
+    }
+    .password-box p {
+      color: #718096;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    .password-input {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-family: 'Malgun Gothic', sans-serif;
+      letter-spacing: 0.2em;
+    }
+    .password-input:focus {
+      outline: none;
+      border-color: #3182ce;
+      box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+    }
+    .password-btn {
+      width: 100%;
+      padding: 12px 24px;
+      background: #3182ce;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: 'Malgun Gothic', sans-serif;
+    }
+    .password-btn:hover { background: #2c5aa0; }
+    .password-error {
+      color: #e53e3e;
+      font-size: 12px;
+      margin-top: 8px;
+      display: none;
+    }
+    .password-error.show { display: block; }
   </style>
 </head>
 <body>
+
+<div class="password-modal" id="passwordModal">
+  <div class="password-box">
+    <h2>🔒 접근 제한</h2>
+    <p>이 대시보드는 비밀번호로 보호되어 있습니다.</p>
+    <input type="password" id="passwordInput" class="password-input" placeholder="비밀번호 입력" />
+    <button class="password-btn" onclick="checkPassword()">접근</button>
+    <div class="password-error" id="passwordError">비밀번호가 틀렸습니다.</div>
+  </div>
+</div>
 
 <div class="header">
   <h1>📊 2021년 교육실적 대시보드</html>
@@ -231,6 +312,38 @@
 </div><!-- /container -->
 
 <script>
+// 비밀번호 확인 함수
+const CORRECT_PASSWORD = '475811';
+
+function checkPassword() {
+  const input = document.getElementById('passwordInput').value;
+  const modal = document.getElementById('passwordModal');
+  const errorMsg = document.getElementById('passwordError');
+
+  if (input === CORRECT_PASSWORD) {
+    modal.classList.add('hidden');
+    sessionStorage.setItem('authVerified', 'true');
+  } else {
+    errorMsg.classList.add('show');
+    document.getElementById('passwordInput').value = '';
+    setTimeout(() => { errorMsg.classList.remove('show'); }, 2000);
+  }
+}
+
+// Enter 키로도 입력 가능
+document.addEventListener('DOMContentLoaded', function() {
+  const passwordInput = document.getElementById('passwordInput');
+  if (sessionStorage.getItem('authVerified') === 'true') {
+    document.getElementById('passwordModal').classList.add('hidden');
+  }
+  if (passwordInput) {
+    passwordInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') checkPassword();
+    });
+    passwordInput.focus();
+  }
+});
+
 const COLORS = {
   blue:   ['#3182ce','#4299e1','#63b3ed','#90cdf4','#bee3f8'],
   multi:  ['#e53e3e','#3182ce','#38a169','#d69e2e','#805ad5','#dd6b20','#2b6cb0','#276749','#744210','#553c9a'],
